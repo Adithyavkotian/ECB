@@ -29,18 +29,18 @@ st.markdown("""
 3. The application will:
    - Apply PKCS7 padding to your message
    - Encrypt each 16-byte block using AES in ECB mode
-   - Encode the result in Base64 format
+   - Encode the result as a hex string (each byte shown as two hex chars)
 4. Copy the displayed ciphertext for decryption
 """)
 
-st.markdown("""#### 🔓 Step 3: Decryption Process""")
+st.markdown("""#### 🔓 Step 3: Decryption Process (Hex mode)""")
 st.markdown("""
-1. In the **Decryption** section, paste the Base64-encoded ciphertext
+1. In the **Decryption** section, paste the **hex-encoded** ciphertext (the app uses hex by default)
 2. Ensure you're using the **same key** that was used for encryption
 3. Click the **"🔓 Decrypt"** button
 4. The application will:
-   - Decode the Base64 string
-   - Decrypt each block using the same key
+   - Convert the hex string into raw bytes
+   - Decrypt each AES block using the same key
    - Remove PKCS7 padding
    - Display the original plaintext
 """)
@@ -60,25 +60,24 @@ st.code('''
 from Crypto.Cipher import AES
 from Crypto.Util.Padding import pad, unpad
 from Crypto.Random import get_random_bytes
-import base64
 
 # Generate a random 128-bit key
 key = get_random_bytes(16)
 
-# Encryption
+# Encryption (returns hex string)
 def encrypt_aes_ecb(plaintext, key):
-    cipher = AES.new(key, AES.MODE_ECB)
-    padded_data = pad(plaintext.encode('utf-8'), AES.block_size)
-    ciphertext = cipher.encrypt(padded_data)
-    return base64.b64encode(ciphertext).decode('utf-8')
+   cipher = AES.new(key, AES.MODE_ECB)
+   padded_data = pad(plaintext.encode('utf-8'), AES.block_size)
+   ciphertext = cipher.encrypt(padded_data)
+   return ciphertext.hex()
 
-# Decryption
-def decrypt_aes_ecb(ciphertext_b64, key):
-    cipher = AES.new(key, AES.MODE_ECB)
-    ciphertext = base64.b64decode(ciphertext_b64)
-    decrypted_padded = cipher.decrypt(ciphertext)
-    decrypted_data = unpad(decrypted_padded, AES.block_size)
-    return decrypted_data.decode('utf-8')
+# Decryption (accepts hex string)
+def decrypt_aes_ecb(ciphertext_hex, key):
+   cipher = AES.new(key, AES.MODE_ECB)
+   ciphertext = bytes.fromhex(ciphertext_hex)
+   decrypted_padded = cipher.decrypt(ciphertext)
+   decrypted_data = unpad(decrypted_padded, AES.block_size)
+   return decrypted_data.decode('utf-8')
 
 # Example usage
 plaintext = "Hello, World!"
@@ -86,17 +85,9 @@ ciphertext = encrypt_aes_ecb(plaintext, key)
 decrypted = decrypt_aes_ecb(ciphertext, key)
 
 print(f"Plaintext: {plaintext}")
-print(f"Ciphertext: {ciphertext}")
+print(f"Ciphertext (hex): {ciphertext}")
 print(f"Decrypted: {decrypted}")
 ''', language='python')
 
 st.markdown('''---''')
 
-st.markdown("""### ⚠️ Important Notes""")
-st.markdown("""
-- **Key Management**: Keep your encryption key secure. Anyone with the key can decrypt your data.
-- **Same Key Required**: Decryption requires the exact same key used for encryption.
-- **Base64 Encoding**: Ciphertext is Base64-encoded for easy copying and display.
-- **Padding**: Automatic PKCS7 padding is applied, so any length of input is supported.
-- **ECB Limitations**: Remember that ECB mode reveals patterns. Use other modes (CBC, GCM) for production.
-""")

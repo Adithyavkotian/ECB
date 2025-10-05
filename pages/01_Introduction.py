@@ -15,7 +15,6 @@ block of ciphertext.
     
 - **Deterministic**: Identical plaintext blocks produce identical ciphertext blocks
 - **Parallel Processing**: Each block can be encrypted/decrypted independently
-- **No IV Required**: Unlike other modes, ECB doesn't require an initialization vector
 - **Block-by-Block Operation**: Processes data in fixed-size blocks (128 bits for AES)
     
 ### Where is ECB Used?

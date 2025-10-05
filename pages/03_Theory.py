@@ -60,21 +60,19 @@ st.markdown("""### 🔹 AES-ECB Functions in Python""")
 st.code("""
 from Crypto.Cipher import AES
 from Crypto.Util.Padding import pad, unpad
-import base64
-
-# Encrypt function
+# Note: this example uses hex string representation for clarity in the UI.
 def encrypt_aes_ecb(plaintext, key):
     cipher = AES.new(key, AES.MODE_ECB)
-    padded = pad(plaintext.encode(), AES.block_size)
+    padded = pad(plaintext.encode('utf-8'), AES.block_size)
     ciphertext = cipher.encrypt(padded)
-    return base64.b64encode(ciphertext).decode()
+    # return as hex string so it is easy to display and split into blocks
+    return ciphertext.hex()
 
-# Decrypt function
-def decrypt_aes_ecb(ciphertext_b64, key):
+def decrypt_aes_ecb(ciphertext_hex, key):
     cipher = AES.new(key, AES.MODE_ECB)
-    ciphertext = base64.b64decode(ciphertext_b64)
+    ciphertext = bytes.fromhex(ciphertext_hex)
     decrypted = unpad(cipher.decrypt(ciphertext), AES.block_size)
-    return decrypted.decode()
+    return decrypted.decode('utf-8')
 """, language="python")
 
 st.markdown("""
@@ -82,6 +80,7 @@ st.markdown("""
 - `AES.new(key, AES.MODE_ECB)`: Creates AES cipher in ECB mode  
 - `pad()`: Ensures message length is multiple of 16  
 - `encrypt()`: Encrypts each block independently  
-- `base64`: Encodes binary ciphertext into readable text  
+- `hex`: In this app we represent ciphertext as a hex string for clarity when
+    displaying individual 16-byte blocks (each block = 32 hex chars).
 - `unpad()`: Removes PKCS7 padding after decryption  
 """)
